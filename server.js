@@ -698,7 +698,7 @@ wss.on("connection", (socket) => {
 // START SERVER
 // ============================================================
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
 
     console.log(
         `VoiceRoom backend running on port ${PORT}`
