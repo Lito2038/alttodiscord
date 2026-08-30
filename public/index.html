@@ -230,6 +230,47 @@ button:hover {
     font-size: 13px;
 }
 
+.unfriend-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.unfriend-modal.hidden {
+    display: none;
+}
+
+.unfriend-box {
+    width: min(400px, calc(100% - 40px));
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.unfriend-box h3 {
+    margin: 0 0 10px;
+}
+
+.unfriend-box p {
+    margin: 0 0 20px;
+}
+
+.unfriend-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.unfriend-actions button {
+    flex: 1;
+}
+
 .logout-modal {
     position: fixed;
     inset: 0;
@@ -280,6 +321,23 @@ button:hover {
 
 <body>
 
+<div id="unfriendModal" class="unfriend-modal hidden">
+    <div class="unfriend-box">
+        <h3>Unfriend?</h3>
+        <p id="unfriendMessage">Are you sure you want to unfriend this person?</p>
+
+        <div class="unfriend-actions">
+            <button type="button" onclick="cancelUnfriend()">
+                Cancel
+            </button>
+
+            <button type="button" class="logout-confirm" onclick="confirmUnfriend()">
+                Unfriend
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="logoutModal" class="logout-modal hidden">
     <div class="logout-box">
         <div class="logout-title">You're about to log out. Are you sure?</div>
@@ -312,6 +370,7 @@ button:hover {
 
         <input
             id="loginUsername"
+            oninput="this.value = this.value.toLowerCase()"
             placeholder="your_username"
             autocomplete="off"
         >
@@ -939,7 +998,30 @@ async function loadFriends() {
 
 async function unfriend(friendId) {
 
-    if (!confirm("Are you sure you want to unfriend this person?")) {
+    window.pendingUnfriendId = friendId;
+
+    const modal =
+        document.getElementById("unfriendModal");
+
+    modal.classList.remove("hidden");
+}
+
+function cancelUnfriend() {
+
+    window.pendingUnfriendId = null;
+
+    document
+        .getElementById("unfriendModal")
+        .classList.add("hidden");
+}
+
+async function confirmUnfriend() {
+
+    const friendId =
+        window.pendingUnfriendId;
+
+    if (!friendId) {
+        cancelUnfriend();
         return;
     }
 
@@ -955,9 +1037,13 @@ async function unfriend(friendId) {
             }
         );
 
+        cancelUnfriend();
+
         await loadFriends();
 
     } catch (err) {
+
+        cancelUnfriend();
 
         alert(err.message);
     }
