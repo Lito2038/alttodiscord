@@ -95,6 +95,91 @@ button:hover {
     display: none;
 }
 
+.legal-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 12px;
+}
+
+.legal-links a {
+    color: #b5bac1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.legal-links a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.legal-links span {
+    color: #6d7076;
+}
+
+.legal-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.legal-modal.hidden {
+    display: none;
+}
+
+.legal-box {
+    position: relative;
+    width: min(700px, 95vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #1e1f22;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 15px 45px rgba(0,0,0,.6);
+}
+
+.legal-box h2 {
+    margin-top: 0;
+}
+
+.legal-x {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    width: auto;
+    margin: 0;
+    padding: 0 8px;
+    background: transparent;
+    color: #b5bac1;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.legal-x:hover {
+    background: transparent;
+    color: white;
+    opacity: 1;
+}
+
+.legal-content {
+    color: #b5bac1;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.legal-close {
+    background: #4e5058;
+    margin-top: 20px;
+}
+
 .error {
     min-height: 20px;
     margin-top: 14px;
@@ -144,10 +229,70 @@ button:hover {
     color: #949ba4;
     font-size: 13px;
 }
+
+.logout-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.logout-modal.hidden {
+    display: none;
+}
+
+.logout-box {
+    width: min(380px, 90vw);
+    background: #1e1f22;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 15px 45px rgba(0,0,0,.55);
+}
+
+.logout-title {
+    color: white;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.logout-confirm {
+    width: 100%;
+    margin-top: 0;
+    background: #ed4245;
+    color: white;
+    font-weight: 700;
+}
+
+.logout-cancel {
+    width: 100%;
+    margin-top: 10px;
+    background: #4e5058;
+    color: white;
+}
+
 </style>
 </head>
 
 <body>
+
+<div id="logoutModal" class="logout-modal hidden">
+    <div class="logout-box">
+        <div class="logout-title">You're about to log out. Are you sure?</div>
+
+        <button class="logout-confirm" onclick="confirmLogout()">
+            Log Out
+        </button>
+
+        <button class="logout-cancel" onclick="cancelLogout()">
+            Cancel
+        </button>
+    </div>
+</div>
 
 <div class="card">
 
@@ -168,7 +313,7 @@ button:hover {
         <input
             id="loginUsername"
             placeholder="your_username"
-            autocomplete="username"
+            autocomplete="off"
         >
 
         <label>Password</label>
@@ -177,7 +322,7 @@ button:hover {
             id="loginPassword"
             type="password"
             placeholder="Your password"
-            autocomplete="current-password"
+            autocomplete="new-password"
         >
 
         <button onclick="login()">
@@ -190,6 +335,18 @@ button:hover {
         >
             Create Account
         </button>
+
+        <div class="legal-links">
+            <a href="#" onclick="openLegal('terms'); return false;">
+                Terms of Service
+            </a>
+            <span>•</span>
+            <a href="#" onclick="openLegal('privacy'); return false;">
+                Privacy Policy
+            </a>
+        </div>
+
+
 
     </div>
 
@@ -320,6 +477,15 @@ button:hover {
 
 </div>
 
+
+<div id="legalModal" class="legal-modal hidden">
+    <div class="legal-box">
+        <button class="legal-x" onclick="closeLegal()" aria-label="Close">×</button>
+        <h2 id="legalTitle"></h2>
+        <div id="legalContent" class="legal-content"></div>
+        <button class="legal-close" onclick="closeLegal()">Close</button>
+    </div>
+</div>
 
 <script>
 
@@ -757,12 +923,39 @@ async function loadFriends() {
 ============================== */
 
 function logout() {
+    document
+        .getElementById("logoutModal")
+        .classList.remove("hidden");
+}
 
-    localStorage.removeItem(
-        "voiceroom_token"
-    );
+function cancelLogout() {
+    document
+        .getElementById("logoutModal")
+        .classList.add("hidden");
+}
 
-    location.reload();
+function confirmLogout() {
+
+    localStorage.removeItem("voiceroom_token");
+
+    document.getElementById("loginUsername").value = "";
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("registerUsername").value = "";
+    document.getElementById("registerPassword").value = "";
+
+    document
+        .getElementById("logoutModal")
+        .classList.add("hidden");
+
+    document
+        .getElementById("accountScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("authScreen")
+        .classList.remove("hidden");
+
+    showLogin();
 }
 
 
@@ -797,6 +990,149 @@ async function checkExistingLogin() {
 }
 
 checkExistingLogin();
+
+
+function openLegal(type) {
+
+    const title = document.getElementById("legalTitle");
+    const content = document.getElementById("legalContent");
+    const modal = document.getElementById("legalModal");
+
+    if (type === "terms") {
+
+        title.textContent = "Terms of Service";
+
+        content.textContent = `VoiceRoom Terms of Service
+
+Last Updated: August 30, 2026
+
+Welcome to VoiceRoom. By creating an account or using VoiceRoom, you agree to these Terms of Service.
+
+1. Acceptable Use
+
+VoiceRoom is intended for communication and social interaction. You may not use VoiceRoom for illegal activity, harassment, threats, scams, impersonation, malicious activity, or attempts to compromise the service or another user's account.
+
+2. Sexual Content
+
+Sexually explicit content, sexual solicitation, sexual exploitation, and sexualized interactions involving minors are not permitted on VoiceRoom.
+
+3. Suicide and Self-Harm
+
+VoiceRoom does not permit content that encourages, promotes, glorifies, romanticizes, or pressures another person to engage in suicide or self-harm.
+
+This includes encouraging someone to hurt themselves, telling someone that suicide or self-harm is a good or desirable choice, pressuring someone to continue or increase self-harming behavior, celebrating another person's self-harm, or attempting to convince another person that harming themselves is the correct or desirable thing to do.
+
+Users may discuss their own experiences with mental health, suicide, or self-harm, ask for support, discuss recovery, or support another person. Discussion of these subjects is not itself a violation of these Terms.
+
+4. Grooming and Protection of Minors
+
+VoiceRoom has zero tolerance for grooming, sexual exploitation of minors, or attempts to solicit sexual content from minors.
+
+Accounts involved in grooming, sexual exploitation of minors, or similar serious abuse may be permanently banned without warning. VoiceRoom may also use technical measures, including IP blocking or other access restrictions, to prevent continued abuse.
+
+Where appropriate or legally required, VoiceRoom may preserve relevant information and report suspected serious abuse to appropriate authorities or reporting organizations.
+
+5. Harassment and Abuse
+
+Do not harass, threaten, stalk, intimidate, blackmail, or repeatedly target other users.
+
+6. Account Security
+
+You are responsible for keeping your account credentials secure. Do not share your password with other people or attempt to access another user's account.
+
+7. Enforcement
+
+VoiceRoom may warn, restrict, suspend, or permanently ban accounts that violate these Terms.
+
+Severe violations, including grooming, exploitation of minors, credible threats, or serious abuse, may result in immediate permanent termination without warning.
+
+VoiceRoom may also restrict access from devices, IP addresses, or other identifiers when reasonably necessary to enforce these rules or protect users.
+
+8. Appeals
+
+If you believe an enforcement action was made in error, you may contact the VoiceRoom operator to request an appeal. VoiceRoom may review enforcement decisions at its discretion.
+
+9. Changes
+
+VoiceRoom may change these Terms or modify features of the service as development continues.
+
+10. Hacking and Unauthorized Access
+
+You may not attempt to hack, exploit, disrupt, damage, overload, reverse engineer, or gain unauthorized access to VoiceRoom, its servers, databases, accounts, authentication systems, or other users' accounts.
+
+This includes attempting to bypass security controls, access restricted areas, steal credentials or authentication tokens, manipulate account data, intentionally exploit vulnerabilities, or interfere with the normal operation of VoiceRoom.
+
+Violations of this section may result in immediate suspension or permanent termination of the offending account and may include additional technical access restrictions.
+
+11. Acceptance
+
+By creating an account or using VoiceRoom, you acknowledge that you have read and agreed to these Terms of Service.`;
+
+        } else {
+
+        title.textContent = "Privacy Policy";
+
+        content.textContent = `VoiceRoom Privacy Policy
+
+Last Updated: August 30, 2026
+
+This Privacy Policy explains what information VoiceRoom collects and how it is used.
+
+1. Information We Store
+
+When you create an account, VoiceRoom stores information necessary to operate your account, including:
+
+• Your username
+• Your account ID
+• Your password in securely hashed form
+• Account creation information
+
+VoiceRoom does not need to store your password in plain text. Passwords are processed using a password-hashing system before being stored.
+
+2. How We Use Information
+
+Account information is used to:
+
+• Create and authenticate your account
+• Identify your account
+• Provide VoiceRoom features
+• Allow features such as friends and friend requests
+• Protect the service against abuse
+
+3. We Do Not Sell Your Information
+
+VoiceRoom does not sell your personal information to advertisers or data brokers.
+
+4. Security
+
+We take reasonable measures to protect stored account information. However, no online service can guarantee absolute security.
+
+5. Abuse and Legal Requirements
+
+Information may be retained or disclosed when reasonably necessary to investigate serious abuse, protect users, comply with legal obligations, or respond to valid legal requests.
+
+6. Cookies and Local Storage
+
+VoiceRoom may use browser storage, including local storage, to maintain your login session.
+
+7. Changes to This Policy
+
+This Privacy Policy may be updated as VoiceRoom develops. Changes will be reflected on this page.
+
+8. Contact
+
+If you have questions about this Privacy Policy or your information, please contact the VoiceRoom operator.
+
+By using VoiceRoom, you acknowledge that you have read this Privacy Policy.`;
+
+    }
+
+    modal.classList.remove("hidden");
+}
+
+function closeLegal() {
+    document.getElementById("legalModal").classList.add("hidden");
+}
 
 </script>
 
