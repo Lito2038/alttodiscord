@@ -515,6 +515,63 @@ app.post(
 );
 
 // ============================================================
+// UNFRIEND
+// ============================================================
+
+app.post(
+    "/api/friends/remove",
+    authenticate,
+    (req, res) => {
+
+        const friendId =
+            String(req.body.friendId || "");
+
+        if (!friendId) {
+            return res.status(400).json({
+                error: "Friend ID is required."
+            });
+        }
+
+        const friendship =
+            db.prepare(`
+                SELECT 1
+                FROM friendships
+                WHERE user_id = ?
+                AND friend_id = ?
+            `).get(
+                req.user.id,
+                friendId
+            );
+
+        if (!friendship) {
+            return res.status(404).json({
+                error: "You are not friends with this user."
+            });
+        }
+
+        const removeFriend =
+            db.prepare(`
+                DELETE FROM friendships
+                WHERE
+                    (user_id = ? AND friend_id = ?)
+                    OR
+                    (user_id = ? AND friend_id = ?)
+            `);
+
+        removeFriend.run(
+            req.user.id,
+            friendId,
+            friendId,
+            req.user.id
+        );
+
+        res.json({
+            success: true
+        });
+    }
+);
+
+// ============================================================
 // GET FRIENDS
 // ============================================================
 
