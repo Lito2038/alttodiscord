@@ -1,0 +1,11 @@
+VoiceRoom
+YOUR VOICE ID
+Generating...
+Copy My ID
+FRIENDS
+No friends yet.
++ Add Friend
+VoiceRoom
+Welcome to VoiceRoom
+Add a friend using their Voice ID to start chatting.
+Connecting...
